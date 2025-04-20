@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipe.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ recipe.title }}</h1>
+  <img src="{{ recipe.image }}" alt="{{ recipe.title }}" width="300">
+  <p><strong>Ready in:</strong> {{ recipe.readyInMinutes }} minutes</p>
+  <p><strong>Servings:</strong> {{ recipe.servings }}</p>
+  <p><strong>Summary:</strong> {{ recipe.summary|safe }}</p>
+
+  <h2>Ingredients</h2>
+  <ul>
+    {% for ingredient in recipe.extendedIngredients %}
+      <li>
+        {% if ingredient.image %}
+          <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ingredient.image }}" alt="{{ ingredient.name }}" width="50">
+        {% endif %}
+        {{ ingredient.original }}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Instructions</h2>
+  <ol>
+    {% for instruction in recipe.analyzedInstructions %}
+      {% for step in instruction.steps %}
+        <li>{{ step.step }}</li>
+
+        {% if step.ingredients %}
+          <p><strong>Ingredients in this step:</strong></p>
+          <ul>
+            {% for ing in step.ingredients %}
+              <li>
+                {% if ing.image %}
+                  <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ing.image }}" alt="{{ ing.name }}" width="40">
+                {% endif %}
+                {{ ing.name }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if step.equipment %}
+          <p><strong>Equipment:</strong></p>
+          <ul>
+            {% for eq in step.equipment %}
+              <li>
+                {% if eq.image %}
+                  <img src="{{ eq.image }}" alt="{{ eq.name }}" width="40">
+                {% endif %}
+                {{ eq.name }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </ol>
+
+  <p><strong>Source:</strong> <a href="{{ recipe.sourceUrl }}" target="_blank">{{ recipe.sourceName }}</a></p>
+{% endblock %}

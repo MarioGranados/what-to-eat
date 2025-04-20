@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - What to Eat{% endblock %}
+
+{% block content %}
+    <label for="ingredient">Enter an ingredient:</label>
+    <input type="text" id="ingredients" placeholder="Enter an ingredient" />
+    <button onclick="getRecipes()">Search</button>
+
+    <label for="id">Enter ID:</label>
+    <input type="text" id="id" placeholder="Enter an ID" />
+    <button onclick="getRecipeById()">Get Recipe</button>
+
+    <div id="results"></div>
+{% endblock %}
