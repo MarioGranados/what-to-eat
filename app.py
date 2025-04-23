@@ -16,29 +16,50 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+from flask_sqlalchemy import SQLAlchemy
 
-# Recipe Model
+db = SQLAlchemy()
+
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, nullable=False, unique=True)  # Unique to avoid duplicates
-    name = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    image = db.Column(db.String(500))
+    summary = db.Column(db.Text)
+    ready_in_minutes = db.Column(db.Integer)
+    servings = db.Column(db.Integer)
+    source_url = db.Column(db.String(500))
+    source_name = db.Column(db.String(255))
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "recipe_id": self.recipe_id,
-            "name": self.name
-        }
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+    ingredients = db.relationship('Ingredient', backref='recipe', cascade="all, delete-orphan")
+    instructions = db.relationship('Instruction', backref='recipe', cascade="all, delete-orphan")
 
-# Ingredient Model
 class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)  # Unique to avoid duplicates
-    quantity = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(255))
+    original = db.Column(db.String(500))
+    image = db.Column(db.String(255))
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
+
+class Instruction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    step_number = db.Column(db.Integer)
+    step_text = db.Column(db.Text)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
+
+    step_ingredients = db.relationship('StepIngredient', backref='instruction', cascade="all, delete-orphan")
+    step_equipment = db.relationship('StepEquipment', backref='instruction', cascade="all, delete-orphan")
+
+class StepIngredient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    image = db.Column(db.String(255))
+    instruction_id = db.Column(db.Integer, db.ForeignKey('instruction.id'))
+
+class StepEquipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    image = db.Column(db.String(255))
+    instruction_id = db.Column(db.Integer, db.ForeignKey('instruction.id'))
 
 
 
@@ -65,7 +86,7 @@ def get_recipes_from_api(ingredients):
     #return jsonify(response.json()) # did not work for some reason
     return response.json()  # Return JSON response directly
 
-def get_individual_recipe_info(recipe_id):
+def get_recipe_by_id(recipe_id):
     params = {
         "includeNutrition": False,
         "apiKey": API_KEY
@@ -73,15 +94,16 @@ def get_individual_recipe_info(recipe_id):
     response = requests.get(BASE_URL + f"/{recipe_id}/information", params=params)
     return response.json()
 
+# -- Render HTML Pages --
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/recipe/<int:recipe_id>')
+@app.route('/<int:recipe_id>')
 def recipe_detail(recipe_id):
-    recipe = get_individual_recipe_info(recipe_id)
+    recipe = get_recipe_by_id(recipe_id)
     return render_template('recipe.html', recipe=recipe)
-
+# end render html pages
 
 @app.route('/recipes', methods=['GET'])
 def get_recipes():
@@ -92,15 +114,14 @@ def get_recipes():
 @app.route('/recipes/<int:recipe_id>', methods=['GET'])
 def get_recipe(recipe_id):
     print('recipe_id', recipe_id)
-    recipe = get_individual_recipe_info(recipe_id)
+    recipe = get_recipe_by_id(recipe_id)
     return jsonify(recipe)
 
 @app.route('/recipes/save-recipe/<int:recipe_id>', methods=['POST'])
 def save_recipe(recipe_id):
     recipe_data = request.get_json()
-    recipe = Recipe(recipe_id=recipe_id, name=recipe_data['name'])
-    print(recipe)
-    recipe.save()
+    print('recipe_data')
+    print(recipe_id)
     return jsonify({"message": "Recipe saved successfully!"}), 201
 
 @app.route('/recipes/delete-recipe/<int:recipe_id>', methods=['DELETE'])

@@ -57,6 +57,7 @@
       {% endfor %}
     {% endfor %}
   </ol>
+  <button onclick="saveRecipe('{{ recipe.id }}')">Save to Recipes</button>
 
   <p><strong>Source:</strong> <a href="{{ recipe.sourceUrl }}" target="_blank">{{ recipe.sourceName }}</a></p>
 {% endblock %}

@@ -78,7 +78,7 @@ const getRecipeById = () => {
         })}
 
 const saveRecipe = (id) => {
-    fetch(`/recipes/save-recipe${id}`, {
+    fetch(`/recipes/save-recipe/${id}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -148,4 +148,5 @@ const fetchIngredients = () => {
             console.error("Error fetching ingredients:", error);
         });
 }
+
 
