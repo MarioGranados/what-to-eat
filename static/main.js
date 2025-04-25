@@ -19,7 +19,7 @@ const appendRecipeInfo = (recipe) => {
 //fetch('/recipes?ingredients=chicken,rice')
 
 function ingredientFormatter(){
-    let ingredients = document.getElementById("ingredients").value
+    let ingredients = document.getElementById("searchQuery").value
     if (ingredients == "" || ingredients == null) {
         alert("Please enter ingredients");
         return;
@@ -33,14 +33,6 @@ function ingredientFormatter(){
     return formattedIngredients
 }
 
-function storeRecipesInLocalStorage(recipes) {
-    localStorage.setItem("recipes", JSON.stringify(recipes));
-}
-
-function getRecipesFromLocalStorage() {
-    const recipes = localStorage.getItem("recipes");
-    return recipes ? JSON.parse(recipes) : [];
-}
 
 // <----------------------------------------------------------------> //
 
@@ -50,10 +42,11 @@ const getRecipes = () => {
     if (formattedIngredients == "") {
         return;
     }
-    fetch(`/recipes?ingredients=${'chicken,rice'}`)
+    fetch(`/recipes?ingredients=${formattedIngredients}`)
         .then((response) => response.json())
         .then((data) => {
-            storeRecipesInLocalStorage(data);
+            let mainContent = document.getElementById("main-content");
+            mainContent.innerHTML = "";
             results.innerHTML = "";
             data.forEach(recipe => {
                 appendRecipeInfo(recipe);
@@ -94,22 +87,9 @@ const saveRecipe = (id) => {
     });
 }
 
-const getSavedRecipes = () => {
-    fetch("/saved-recipes")
-    .then((response) => response.json())
-    .then((data) => {
-        results.innerHTML = "";
-        data.forEach(recipe => {
-            appendRecipeInfo(recipe);
-        });
-    })
-    .catch((error) => {
-        console.error("Error fetching saved recipes:", error);
-    });
-}
-
 const deleteSavedRecipe = (id) => {
-    fetch(`/saved-recipes/${id}`, {
+    console.log(id)
+    fetch(`/recipes/delete-recipe/${id}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json"
@@ -118,7 +98,7 @@ const deleteSavedRecipe = (id) => {
     .then((response) => response.json())
     .then((data) => {
         console.log("Recipe deleted:", data);
-        getSavedRecipes();
+        window.location.reload();
     })
     .catch((error) => {
         console.error("Error deleting saved recipe:", error);
@@ -150,3 +130,11 @@ const fetchIngredients = () => {
 }
 
 
+const removeIngredient = (ingredientId) => {
+    fetchIngredients(`ingredients/remove/${ingredientId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => response.json())
+}

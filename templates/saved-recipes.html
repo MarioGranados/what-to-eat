@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}My Recipes - What to Eat?{% endblock %}
+
+{% block content %}
+    <h2>My Saved Recipes</h2>
+
+    {% if recipes %}
+        <div class="recipe-list">
+            {% for recipe in recipes %}
+                <div class="recipe-card">
+                    <h3>{{ recipe.title }}</h3>
+                    {% if recipe.image %}
+                        <img src="{{ recipe.image }}" alt="{{ recipe.title }}" width="200">
+                    {% endif %}
+                    <br>
+                    <a href="/recipe/{{ recipe.id }}" class="view-link">View Recipe</a>
+                    <button onclick="deleteSavedRecipe('{{ recipe.id }}')">Remove Recipe</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}r
+        <p>You haven't saved any recipes yet.</p>
+    {% endif %}
+{% endblock %}

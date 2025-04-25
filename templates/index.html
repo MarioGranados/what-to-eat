@@ -3,13 +3,29 @@
 {% block title %}Home - What to Eat{% endblock %}
 
 {% block content %}
-    <label for="ingredient">Enter an ingredient:</label>
-    <input type="text" id="ingredients" placeholder="Enter an ingredient" />
-    <button onclick="getRecipes()">Search</button>
+    {% set category = "All Categories" %}
+    {% set number_to_show = 5 %}
 
-    <label for="id">Enter ID:</label>
-    <input type="text" id="id" placeholder="Enter an ID" />
-    <button onclick="getRecipeById()">Get Recipe</button>
+    <h2>In {{ category }}, check out these {{ number_to_show }} random recipes:</h2>
 
-    <div id="results"></div>
+    {% if recipes %}
+        <div class="recipe-list">
+            {% for recipe in recipes[:number_to_show] %}
+                <div class="recipe-card">
+                    <h3>{{ recipe.title }}</h3>
+
+                    {% if recipe.image %}
+                        <img src="{{ recipe.image }}" alt="{{ recipe.title }}" width="250">
+                    {% endif %}
+
+                    <p><strong>Ready in:</strong> {{ recipe.readyInMinutes }} minutes</p>
+                    <p><strong>Servings:</strong> {{ recipe.servings }}</p>
+                    <a href="{{ recipe.id }}" target="_blank">View Full Recipe</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No recipes could be loaded at this time.</p>
+    {% endif %}
+
 {% endblock %}

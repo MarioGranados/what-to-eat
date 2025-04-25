@@ -1,4 +1,251 @@
-*{
-    background-color: #000;
-    color: whitesmoke
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+}
+
+h1, h2 {
+    color: #333;
+    text-align: center;
+}
+
+header, footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.hero {
+    background-color: #f7f7f7;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    margin: 0;
+}
+
+.hero-description {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.footer-content p {
+    margin: 0;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+}
+
+.navbar-left, .navbar-right {
+    flex: 1;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 1.5rem;
+    text-decoration: none;
+}
+
+.navbar-center {
+    flex: 2;
+    text-align: center;
+}
+
+.search-form {
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-input {
+    padding: 8px;
+    width: 300px;
+    border: none;
+    border-radius: 5px;
+}
+
+.search-button {
+    padding: 8px 12px;
+    border: none;
+    background-color: #ff7f50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-button:hover {
+    background-color: #e67e22;
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+.navbar-links li {
+    display: inline;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.navbar-links a:hover {
+    text-decoration: underline;
+}
+
+/* Recipe and Ingredient Styles */
+.recipe-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    padding: 20px;
+}
+
+.recipe-card, .ingredient-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recipe-card:hover, .ingredient-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.recipe-card img, .ingredient-card img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.recipe-card h3, .ingredient-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.recipe-card p, .ingredient-card p {
+    font-size: 1rem;
+    color: #555;
+    margin: 5px 0;
+}
+
+.recipe-card a, .remove-ingredient-btn, .what-can-i-make-btn {
+    background-color: #ff7f50;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.recipe-card a:hover, .remove-ingredient-btn:hover, .what-can-i-make-btn:hover {
+    background-color: #e67e22;
+}
+
+/* Ingredient List */
+#ingredients-list, .recipe-detail-container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+#ingredients-list h2, .recipe-detail-header .recipe-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Ingredient Card Styles */
+.ingredient-name {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.ingredient-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.ingredient-actions, .ingredients-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.remove-ingredient-btn, .save-button, .what-can-i-make-btn {
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.save-button {
+    font-size: 1.1rem;
+}
+
+.ingredients-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.save-button:hover, .what-can-i-make-btn:hover {
+    background-color: #e67e22;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .recipe-list, .ingredient-list-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .recipe-card, .ingredient-card {
+        width: 90%;
+        margin-bottom: 20px;
+    }
+
+    .recipe-title {
+        font-size: 2rem;
+    }
+
+    .recipe-img, .ingredient-img {
+        width: 80%;
+    }
+
+    .recipe-meta p, .ingredient-item, .ingredient-step, .equipment-item {
+        font-size: 0.9rem;
+    }
+
+    .recipe-meta p {
+        font-size: 1rem;
+    }
 }

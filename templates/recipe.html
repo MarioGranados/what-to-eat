@@ -3,61 +3,77 @@
 {% block title %}{{ recipe.title }}{% endblock %}
 
 {% block content %}
-  <h1>{{ recipe.title }}</h1>
-  <img src="{{ recipe.image }}" alt="{{ recipe.title }}" width="300">
-  <p><strong>Ready in:</strong> {{ recipe.readyInMinutes }} minutes</p>
-  <p><strong>Servings:</strong> {{ recipe.servings }}</p>
-  <p><strong>Summary:</strong> {{ recipe.summary|safe }}</p>
+  <div class="recipe-detail-container">
+    <div class="recipe-detail-header">
+      <h1 class="recipe-title">{{ recipe.title }}</h1>
+      <div class="recipe-image">
+        <img src="{{ recipe.image }}" alt="{{ recipe.title }}" class="recipe-img">
+      </div>
+    </div>
 
-  <h2>Ingredients</h2>
-  <ul>
-    {% for ingredient in recipe.extendedIngredients %}
-      <li>
-        {% if ingredient.image %}
-          <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ingredient.image }}" alt="{{ ingredient.name }}" width="50">
-        {% endif %}
-        {{ ingredient.original }}
-      </li>
-    {% endfor %}
-  </ul>
+    <div class="recipe-meta">
+      <p><strong>Ready in:</strong> {{ recipe.readyInMinutes }} minutes</p>
+      <p><strong>Servings:</strong> {{ recipe.servings }}</p>
+      <p><strong>Summary:</strong> {{ recipe.summary|safe }}</p>
+    </div>
 
-  <h2>Instructions</h2>
-  <ol>
-    {% for instruction in recipe.analyzedInstructions %}
-      {% for step in instruction.steps %}
-        <li>{{ step.step }}</li>
+    <div class="ingredients">
+      <h2>Ingredients</h2>
+      <ul>
+        {% for ingredient in recipe.extendedIngredients %}
+          <li class="ingredient-item">
+            {% if ingredient.image %}
+              <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ingredient.image }}" alt="{{ ingredient.name }}" class="ingredient-img">
+            {% endif %}
+            {{ ingredient.original }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
 
-        {% if step.ingredients %}
-          <p><strong>Ingredients in this step:</strong></p>
-          <ul>
-            {% for ing in step.ingredients %}
-              <li>
-                {% if ing.image %}
-                  <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ing.image }}" alt="{{ ing.name }}" width="40">
-                {% endif %}
-                {{ ing.name }}
-              </li>
-            {% endfor %}
-          </ul>
-        {% endif %}
+    <div class="instructions">
+      <h2>Instructions</h2>
+      <ol>
+        {% for instruction in recipe.analyzedInstructions %}
+          {% for step in instruction.steps %}
+            <li class="instruction-step">{{ step.step }}</li>
 
-        {% if step.equipment %}
-          <p><strong>Equipment:</strong></p>
-          <ul>
-            {% for eq in step.equipment %}
-              <li>
-                {% if eq.image %}
-                  <img src="{{ eq.image }}" alt="{{ eq.name }}" width="40">
-                {% endif %}
-                {{ eq.name }}
-              </li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-  </ol>
-  <button onclick="saveRecipe('{{ recipe.id }}')">Save to Recipes</button>
+            {% if step.ingredients %}
+              <p><strong>Ingredients in this step:</strong></p>
+              <ul>
+                {% for ing in step.ingredients %}
+                  <li class="ingredient-step">
+                    {% if ing.image %}
+                      <img src="https://spoonacular.com/cdn/ingredients_100x100/{{ ing.image }}" alt="{{ ing.name }}" class="ingredient-step-img">
+                    {% endif %}
+                    {{ ing.name }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
 
-  <p><strong>Source:</strong> <a href="{{ recipe.sourceUrl }}" target="_blank">{{ recipe.sourceName }}</a></p>
+            {% if step.equipment %}
+              <p><strong>Equipment:</strong></p>
+              <ul>
+                {% for eq in step.equipment %}
+                  <li class="equipment-item">
+                    {% if eq.image %}
+                      <img src="{{ eq.image }}" alt="{{ eq.name }}" class="equipment-img">
+                    {% endif %}
+                    {{ eq.name }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </ol>
+    </div>
+
+    <div class="save-recipe">
+      <button onclick="saveRecipe('{{ recipe.id }}')" class="save-button">Save to Recipes</button>
+    </div>
+
+    <p><strong>Source:</strong> <a href="{{ recipe.sourceUrl }}" target="_blank" class="source-link">{{ recipe.sourceName }}</a></p>
+  </div>
 {% endblock %}

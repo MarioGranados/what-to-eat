@@ -1,5 +1,21 @@
-<nav>
-    <a href="{{ url_for('home') }}">Home</a>
-    <a href="/about">About</a>
-  </nav>
-  
+<nav class="navbar">
+  <div class="navbar-left">
+      <a href="/" class="navbar-brand">Recipe Finder</a>
+  </div>
+  <div class="navbar-center">
+    <form class="search-form">
+        <input type="text" id="searchQuery" class="search-input" placeholder="Search by ingredients...">
+        <button type="button" onclick="getRecipes()" class="search-button">Search</button>
+    </form>
+    
+  </div>
+  <div class="navbar-right">
+      <ul class="navbar-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/ingredients">Ingredients</a></li>
+          <li><a href="/saved-recipes">My Recipes</a></li>
+      </ul>
+  </div>
+</nav>
+
+

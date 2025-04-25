@@ -19,6 +19,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+db.init_app(app)
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,15 +96,42 @@ def get_recipe_by_id(recipe_id):
     response = requests.get(BASE_URL + f"/{recipe_id}/information", params=params)
     return response.json()
 
+def generate_random_recipes():
+    params = {
+        "includeNutrition": False,
+        "apiKey": API_KEY,
+        "number": 5
+    }
+    response = requests.get(BASE_URL + "/random", params=params)
+    return response.json()
+
 # -- Render HTML Pages --
 @app.route('/')
 def home():
-    return render_template('index.html')
+    recipes = generate_random_recipes()
+    print(recipes)
+    return render_template('index.html', recipes=recipes['recipes'])
 
 @app.route('/<int:recipe_id>')
 def recipe_detail(recipe_id):
     recipe = get_recipe_by_id(recipe_id)
     return render_template('recipe.html', recipe=recipe)
+
+@app.route('/saved-recipes')
+def saved_recipes():
+    recipes = Recipe.query.all()
+    return render_template('saved-recipes.html', recipes=recipes)
+
+@app.route('/ingredients')
+def current_ingredients():
+    ingredients = Ingredient.query.all()
+    return render_template('ingredients.html', ingredients=ingredients)
+
+@app.route('/search-by-ingredients/<string:ingredients>')
+def search_by_ingredients(ingredients):
+    recipes = get_recipes_from_api(ingredients)
+    return render_template('search_by_ingredients.html', recipes=recipes, ingredients=ingredients)
+    return render_template('search_by_ingredients.html')
 # end render html pages
 
 @app.route('/recipes', methods=['GET'])
@@ -119,14 +148,67 @@ def get_recipe(recipe_id):
 
 @app.route('/recipes/save-recipe/<int:recipe_id>', methods=['POST'])
 def save_recipe(recipe_id):
-    recipe_data = request.get_json()
-    print('recipe_data')
-    print(recipe_id)
+    recipe_data = get_recipe_by_id(recipe_id)
+
+    recipe = Recipe(
+        title=recipe_data['title'],
+        image=recipe_data['image'],
+        summary=recipe_data['summary'],
+        ready_in_minutes=recipe_data['readyInMinutes'],
+        servings=recipe_data['servings'],
+        source_url=recipe_data['sourceUrl'],
+        source_name=recipe_data['sourceName']
+    )
+    db.session.add(recipe)
+    db.session.flush() 
+
+    # Save ingredients
+    for ing in recipe_data['extendedIngredients']:
+        ingredient = Ingredient(
+            name=ing['name'],
+            original=ing['original'],
+            image=ing['image'],
+            recipe_id=recipe.id
+        )
+        db.session.add(ingredient)
+
+    # Save instructions
+    for instr in recipe_data['analyzedInstructions'][0]['steps']:
+        instruction = Instruction(
+            step_number=instr['number'],
+            step_text=instr['step'],
+            recipe_id=recipe.id
+        )
+        db.session.add(instruction)
+        db.session.flush()  # Get instruction.id
+
+        # Step ingredients
+        for step_ing in instr.get('ingredients', []):
+            step_ingredient = StepIngredient(
+                name=step_ing['name'],
+                image=step_ing['image'],
+                instruction_id=instruction.id
+            )
+            db.session.add(step_ingredient)
+
+        # Step equipment
+        for step_eq in instr.get('equipment', []):
+            step_equipment = StepEquipment(
+                name=step_eq['name'],
+                image=step_eq['image'],
+                instruction_id=instruction.id
+            )
+            db.session.add(step_equipment)
+
+    db.session.commit()
+
     return jsonify({"message": "Recipe saved successfully!"}), 201
+
 
 @app.route('/recipes/delete-recipe/<int:recipe_id>', methods=['DELETE'])
 def delete_recipe(recipe_id):
-    recipe = Recipe.query.filter_by(recipe_id=recipe_id).first()
+
+    recipe = Recipe.query.filter_by(id=recipe_id).first()
     if recipe:
         db.session.delete(recipe)
         db.session.commit()
@@ -139,7 +221,6 @@ def get_ingredients():
     ingredients = Ingredient.query.all()
     return jsonify([ingredient.to_dict() for ingredient in ingredients])
     
-
 
 if __name__ == '__main__':
     with app.app_context():

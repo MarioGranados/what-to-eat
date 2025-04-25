@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingredients - What to Eat?{% endblock %}
+
+{% block content %}
+    <section id="ingredients-list">
+        <h2>All Ingredients</h2>
+        {% if ingredients %}
+            <div class="ingredient-list-container">
+                {% for ingredient in ingredients %}
+                    <div class="ingredient-card">
+                        <h3 class="ingredient-name">{{ ingredient.name }}</h3>
+
+                        {% if ingredient.image %}
+                            <img src="https://img.spoonacular.com/ingredients_100x100/{{ ingredient.image }}" alt="{{ ingredient.name }}" class="ingredient-img">
+                        {% endif %}
+
+                        <div class="ingredient-actions">
+                            <input type="hidden" id="ingredient-{{ ingredient.id }}" value="{{ ingredient.id }}">
+                            <button onclick="removeIngredient('{{ ingredient.id }}')" class="remove-ingredient-btn">Remove Ingredient</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="ingredients-actions">
+                <input type="hidden" id="ingredients" value="{{ ingredients|map(attribute='name')|join(',') }}">
+                <button onclick="getRecipes()" class="what-can-i-make-btn">What Can I Make Right Now?</button>
+            </div>
+        {% else %}
+            <p>No ingredients found.</p>
+        {% endif %}
+    </section>
+
+    <div id="results"></div>
+
+{% endblock %}

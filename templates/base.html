@@ -6,13 +6,21 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <h1>What should I eat today?</h1>
-    </header>
 
-    <main>
+    <!-- Navbar -->
+    {% include '_navbar.html' %}
+
+    <!-- Hero Section -->
+    {% include '_hero.html' %}
+
+    <div id="results"></div>
+
+    <main id="main-content">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Footer -->
+    {% include '_footer.html' %}
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
