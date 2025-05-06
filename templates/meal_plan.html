@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingredients - What to Eat?{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <h2 class="hero-title">Your Personalized Meal Plan</h2>
+        <p class="hero-description">Enjoy a balanced and tasty week of meals!</p>
+    </div>
+
+    <div class="meal-plan-container" >
+        <h2>Meal Plan {{ start_date }} - {{ end_date }}</h2>
+        
+        <div class="meal-plan">
+            {% for day in days_of_week %}
+            <div class="day-meal">
+                <h3>{{ day }}</h3>
+                <div class="meal-types">
+                    {% for meal_type in meal_types %}
+                    <div class="meal">
+                        <h4>{{ meal_type }}</h4>
+                        {% set recipe = meal_recipes[day][meal_type] %}
+                        <p>Recipe: {{ recipe.title }}</p>
+                        {% if recipe.image %}
+                            <img src="{{ recipe.image }}" alt="{{ recipe.title }}" class="recipe-image">
+                        {% endif %}
+                    </div>
+                    
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="actions">
+            <button onclick="deleteMealPlan('{{ meal_plan.id }}')">Delete Meal Plan</button>
+        </div>
+    </div>
+{% endblock %}

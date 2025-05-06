@@ -1,226 +1,24 @@
-import requests
-from flask import Flask, jsonify, request, render_template
-from flask_sqlalchemy import SQLAlchemy
-import json
-import dotenv 
+from flask import Flask
 from dotenv import load_dotenv
 import os
 
-
-app = Flask(__name__)
+from extensions import db
 
 load_dotenv()
-
-
-# Database Stuff
+app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
 db.init_app(app)
 
+import models
 
-class Recipe(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
-    image = db.Column(db.String(500))
-    summary = db.Column(db.Text)
-    ready_in_minutes = db.Column(db.Integer)
-    servings = db.Column(db.Integer)
-    source_url = db.Column(db.String(500))
-    source_name = db.Column(db.String(255))
+from routes.api_routes import api_routes
+from routes.meal_plan_routes import meal_plan_routes
+from views.html_views import html_views
 
-    ingredients = db.relationship('Ingredient', backref='recipe', cascade="all, delete-orphan")
-    instructions = db.relationship('Instruction', backref='recipe', cascade="all, delete-orphan")
-
-class Ingredient(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    original = db.Column(db.String(500))
-    image = db.Column(db.String(255))
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
-
-class Instruction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    step_number = db.Column(db.Integer)
-    step_text = db.Column(db.Text)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
-
-    step_ingredients = db.relationship('StepIngredient', backref='instruction', cascade="all, delete-orphan")
-    step_equipment = db.relationship('StepEquipment', backref='instruction', cascade="all, delete-orphan")
-
-class StepIngredient(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    image = db.Column(db.String(255))
-    instruction_id = db.Column(db.Integer, db.ForeignKey('instruction.id'))
-
-class StepEquipment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    image = db.Column(db.String(255))
-    instruction_id = db.Column(db.Integer, db.ForeignKey('instruction.id'))
-
-
-
-API_KEY = os.getenv('API_KEY')
-if not API_KEY:
-    raise ValueError("API_KEY not found in environment variables.")
-BASE_URL = os.getenv('BASE_URL')
-BY_INGREDIENTS = os.getenv('BY_INGREDIENTS')
-BY_ID = os.getenv('BY_ID')
-
-
-#GET https://api.spoonacular.com/recipes/findByIngredients?ingredients=apples,+flour,+sugar&number=2
-
-ingredients = 'apples, flour, sugar' # this is how the variable should look like
-
-
-def get_recipes_from_api(ingredients):
-    params = {
-        "ingredients": ingredients,
-        "number": 5,
-        "apiKey": API_KEY
-    }
-    response = requests.get(BASE_URL + f"/findByIngredients", params=params)
-    #return jsonify(response.json()) # did not work for some reason
-    return response.json()  # Return JSON response directly
-
-def get_recipe_by_id(recipe_id):
-    params = {
-        "includeNutrition": False,
-        "apiKey": API_KEY
-    }
-    response = requests.get(BASE_URL + f"/{recipe_id}/information", params=params)
-    return response.json()
-
-def generate_random_recipes():
-    params = {
-        "includeNutrition": False,
-        "apiKey": API_KEY,
-        "number": 5
-    }
-    response = requests.get(BASE_URL + "/random", params=params)
-    return response.json()
-
-# -- Render HTML Pages --
-@app.route('/')
-def home():
-    recipes = generate_random_recipes()
-    print(recipes)
-    return render_template('index.html', recipes=recipes['recipes'])
-
-@app.route('/<int:recipe_id>')
-def recipe_detail(recipe_id):
-    recipe = get_recipe_by_id(recipe_id)
-    return render_template('recipe.html', recipe=recipe)
-
-@app.route('/saved-recipes')
-def saved_recipes():
-    recipes = Recipe.query.all()
-    return render_template('saved-recipes.html', recipes=recipes)
-
-@app.route('/ingredients')
-def current_ingredients():
-    ingredients = Ingredient.query.all()
-    return render_template('ingredients.html', ingredients=ingredients)
-
-@app.route('/search-by-ingredients/<string:ingredients>')
-def search_by_ingredients(ingredients):
-    recipes = get_recipes_from_api(ingredients)
-    return render_template('search_by_ingredients.html', recipes=recipes, ingredients=ingredients)
-    return render_template('search_by_ingredients.html')
-# end render html pages
-
-@app.route('/recipes', methods=['GET'])
-def get_recipes():
-    ingredients = request.args.get('ingredients')
-    recipes = get_recipes_from_api(ingredients)
-    return jsonify(recipes)
-
-@app.route('/recipes/<int:recipe_id>', methods=['GET'])
-def get_recipe(recipe_id):
-    print('recipe_id', recipe_id)
-    recipe = get_recipe_by_id(recipe_id)
-    return jsonify(recipe)
-
-@app.route('/recipes/save-recipe/<int:recipe_id>', methods=['POST'])
-def save_recipe(recipe_id):
-    recipe_data = get_recipe_by_id(recipe_id)
-
-    recipe = Recipe(
-        title=recipe_data['title'],
-        image=recipe_data['image'],
-        summary=recipe_data['summary'],
-        ready_in_minutes=recipe_data['readyInMinutes'],
-        servings=recipe_data['servings'],
-        source_url=recipe_data['sourceUrl'],
-        source_name=recipe_data['sourceName']
-    )
-    db.session.add(recipe)
-    db.session.flush() 
-
-    # Save ingredients
-    for ing in recipe_data['extendedIngredients']:
-        ingredient = Ingredient(
-            name=ing['name'],
-            original=ing['original'],
-            image=ing['image'],
-            recipe_id=recipe.id
-        )
-        db.session.add(ingredient)
-
-    # Save instructions
-    for instr in recipe_data['analyzedInstructions'][0]['steps']:
-        instruction = Instruction(
-            step_number=instr['number'],
-            step_text=instr['step'],
-            recipe_id=recipe.id
-        )
-        db.session.add(instruction)
-        db.session.flush()  # Get instruction.id
-
-        # Step ingredients
-        for step_ing in instr.get('ingredients', []):
-            step_ingredient = StepIngredient(
-                name=step_ing['name'],
-                image=step_ing['image'],
-                instruction_id=instruction.id
-            )
-            db.session.add(step_ingredient)
-
-        # Step equipment
-        for step_eq in instr.get('equipment', []):
-            step_equipment = StepEquipment(
-                name=step_eq['name'],
-                image=step_eq['image'],
-                instruction_id=instruction.id
-            )
-            db.session.add(step_equipment)
-
-    db.session.commit()
-
-    return jsonify({"message": "Recipe saved successfully!"}), 201
-
-
-@app.route('/recipes/delete-recipe/<int:recipe_id>', methods=['DELETE'])
-def delete_recipe(recipe_id):
-
-    recipe = Recipe.query.filter_by(id=recipe_id).first()
-    if recipe:
-        db.session.delete(recipe)
-        db.session.commit()
-        return jsonify({"message": "Recipe deleted successfully!"}), 200
-    else:
-        return jsonify({"message": "Recipe not found!"}), 404
-    
-@app.route('/ingredients', methods=['GET'])
-def get_ingredients():
-    ingredients = Ingredient.query.all()
-    return jsonify([ingredient.to_dict() for ingredient in ingredients])
-    
+app.register_blueprint(api_routes)
+app.register_blueprint(meal_plan_routes)
+app.register_blueprint(html_views)
 
 if __name__ == '__main__':
     with app.app_context():
